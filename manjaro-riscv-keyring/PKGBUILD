@@ -1,0 +1,22 @@
+# Maintainer: Estela ad Astra <i@estela.cn>
+
+pkgname=manjaro-riscv-keyring
+pkgver=20220909
+pkgrel=2
+pkgdesc="Manjaro-RISCV PGP keyring"
+arch=('any')
+url="https://manjaro.nya.fish"
+license=('GPL')
+install="${pkgname}.install"
+source=('Makefile'
+        'manjaro-riscv.gpg'
+        'manjaro-riscv-revoked'
+        'manjaro-riscv-trusted')
+sha256sums=('72f6f47b5687241a4909c8b7a6b506e35c79b49353e6050aad6733cc8191f716'
+            '9ebf18cfadc1cbc05ebb0e22f8240d13bc063973801c62ed9781f266a5b4c00e'
+            'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+            'ea9677b4d74621e4a67d5e404697a801027c2807aaf2e63b2864e0d62d84d63d')
+
+package() {
+  make DESTDIR="${pkgdir}" install
+}

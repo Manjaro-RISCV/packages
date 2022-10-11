@@ -1,0 +1,84 @@
+#!/bin/sh
+# This script will attempt to resize the partition and filesystem in order to fill the drive and do a few other minor adjustments to the system
+ # Credits to rpi-distro https://github.com/RPi-Distro/raspi-config/
+
+# Get device and partition numbers/names
+ # Root Partition
+  PART_DEV=`findmnt / -o source -n | cut -f1 -d"["`
+ 
+ # Remove '/dev/' from the name 
+  PART_NAME=`echo $PART_DEV | cut -d "/" -f 3`
+ 
+ # Set just the name of the device, usually mmcblk0
+  DEV_NAME=`echo /sys/block/*/${PART_NAME} | cut -d "/" -f 4`
+
+ # Add /dev/ to device name
+  DEV="/dev/${DEV_NAME}"
+
+ # Get Number of device as single digit integer
+  PART_NUM=`cat /sys/block/${DEV_NAME}/${PART_NAME}/partition`
+
+ # Get size of SDCard (final sector)
+  SECTOR_SIZE=`cat /sys/block/${DEV_NAME}/size`
+
+ # Set the ending sector that the partition should be resized too
+  END_SECTOR=`expr $SECTOR_SIZE - 1`
+
+#growpartfs $PART_DEV
+
+# resize the partition
+# parted command disabled for now. Using sfdisk instead
+#parted -m $DEV u s resizepart $PART_NUM yes $END_SECTOR
+echo ", +" | sfdisk --no-reread -N $PART_NUM $DEV
+
+# reload the partitions in the kernel
+#partprobe
+partx -u $DEV
+
+# resize
+if [[ $(lsblk -o NAME,FSTYPE | grep $PART_NAME | awk '{print $2}') = "btrfs" ]]; then
+    btrfs filesystem resize max /
+else
+    resize2fs $PART_DEV
+fi
+
+#sudo systemctl disable resize-fs.service
+
+# Change fstab to boot partition UUID
+    BOOT_DEV=$(findmnt /boot -o source -n)
+    BOOT_NAME=$(echo $BOOT_DEV | cut -d "/" -f 3)
+    BOOT_PARTUUID=$(lsblk -o NAME,PARTUUID | grep $BOOT_NAME | awk '{print $2}')
+    sed -i "s/LABEL=BOOT_MNJRO/PARTUUID=$BOOT_PARTUUID/g" /etc/fstab
+    echo "Set boot partition to $BOOT_PARTUUID in /etc/fstab..." > /var/log/resize-fs.log
+    
+# Change boot script to root partition UUID
+    #ROOT=$(findmnt / -o source -n)
+    ROOT_PARTUUID=$(lsblk -o NAME,PARTUUID | grep $PART_NAME | awk '{print $2}')
+    if [ -f /boot/boot.cmd ]; then
+        sed -i "s/LABEL=ROOT_MNJRO/PARTUUID=$ROOT_PARTUUID/g" /boot/boot.cmd
+        mkimage -T script -A arm64 -C none -d /boot/boot.cmd /boot/boot.scr
+        elif [ -f /boot/extlinux/extlinux.conf ]; then
+            sed -i "s/LABEL=ROOT_MNJRO/PARTUUID=$ROOT_PARTUUID/g" /boot/extlinux/extlinux.conf
+        elif [ -f /boot/boot.ini ]; then
+            sed -i "s/LABEL=ROOT_MNJRO/PARTUUID=$ROOT_PARTUUID/g" /boot/boot.ini
+        elif [ -f /boot/uEnv.ini ]; then
+            sed -i "s/LABEL=ROOT_MNJRO/PARTUUID=$ROOT_PARTUUID/g" /boot/uEnv.ini
+        elif [ -f /boot/cmdline.txt ]; then
+            sed -i "s/LABEL=ROOT_MNJRO/PARTUUID=$ROOT_PARTUUID/g" /boot/cmdline.txt
+        elif [ -f /boot/boot.txt ]; then
+            sed -i "s/LABEL=ROOT_MNJRO/PARTUUID=$ROOT_PARTUUID/g" /boot/boot.txt
+            cd /boot
+            ./mkscr
+    fi
+    echo "Set root partition to $ROOT_PARTUUID in the relevant boot script..." >> /var/log/resize-fs.log
+    sed -i "s/LABEL=ROOT_MNJRO/PARTUUID=$ROOT_PARTUUID/g" /etc/fstab
+    echo "Set root partition to $ROOT_PARTUUID in /etc/fstab..." >> /var/log/resize-fs.log
+
+# Enable NTP
+    timedatectl set-ntp on
+
+# initiate pacman keyrings
+    sleep 5 # this makes sure that the system is ready, so gpg generation does not fail
+    rm -rf /etc/pacman.d/gnupg
+    pacman-key --init 1>/dev/null
+    pacman-key --populate archlinuxarm manjaro manjaro-arm 1>/dev/null

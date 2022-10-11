@@ -1,0 +1,19 @@
+# Maintainer: Estela ad Astra <i@estela.cn>
+
+pkgname=pacman-mirrorlist
+pkgver=20220908
+pkgrel=1
+pkgdesc="Manjaro RISC-V mirror list for use by pacman"
+arch=('any')
+url="https://manjaro.nya.fish"
+license=('GPL')
+backup=(etc/pacman.d/mirrorlist)
+source=(mirrorlist)
+
+package() {
+  mkdir -p "$pkgdir/etc/pacman.d"
+  install -m644 "$srcdir/mirrorlist" "$pkgdir/etc/pacman.d/"
+}
+
+md5sums=('004792ac66a00c89c73ba9192af53f1c')
+sha256sums=('5ea69e84ebcd425f1d50b022a5e2a15d0f9cb6c6ac4d566f734ad843aedd0e40')

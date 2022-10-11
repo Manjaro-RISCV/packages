@@ -1,0 +1,2 @@
+Server = https://mirrors.nya.fish/manjaro-riscv/unstable/$repo/$arch
+Server = https://repo.saezi.ae/manjaro-riscv/unstable/$repo/$arch

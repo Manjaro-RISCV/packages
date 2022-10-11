@@ -1,0 +1,7 @@
+NAME="Manjaro RISC-V"
+ID="manjaro-riscv"
+ID_LIKE="manjaro arch"
+PRETTY_NAME="Manjaro RISC-V"
+ANSI_COLOR="32;1;24;144;200"
+HOME_URL="https://manjaro.nya.fish/"
+LOGO=manjarolinux

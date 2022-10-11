@@ -1,0 +1,7 @@
+post_upgrade() {
+  if [[ $(vercmp "$2" 2022.06.08-2) -lt 0 ]] && [ -f /etc/locale.conf.pacsave ] && [ ! -f /etc/locale.conf ]; then
+    echo "Note: locale.conf is not longer tracked by"
+    echo "package management. Restoring /etc/locale.conf ..."
+    mv /etc/locale.conf.pacsave /etc/locale.conf
+  fi
+}

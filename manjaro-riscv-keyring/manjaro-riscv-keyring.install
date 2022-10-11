@@ -1,0 +1,24 @@
+msg() {
+    local ALL_OFF="\e[1;0m"
+    local BOLD="\e[1;1m"
+    local GREEN="${BOLD}\e[1;32m"
+
+    local MESSAGE=$1
+    shift 1
+    printf "${GREEN}==>${ALL_OFF}${BOLD} ${MESSAGE}${ALL_OFF}\n" "$@" >&2
+}
+
+post_upgrade() {
+	if usr/bin/pacman-key -l >/dev/null 2>&1; then
+		usr/bin/pacman-key --populate manjaro-riscv
+	else
+		echo " >>> Run \`pacman-key --init\` to set up your pacman keyring."
+		echo " >>> Then run \`pacman-key --populate manjaro-riscv\` to install the Manjaro keyring."
+	fi
+}
+
+post_install() {
+	if [ -x usr/bin/pacman-key ]; then
+		post_upgrade
+	fi
+}

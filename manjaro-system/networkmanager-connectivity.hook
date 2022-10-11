@@ -1,0 +1,11 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = networkmanager
+
+[Action]
+Description = Changing NetworkManager Connectivity-Ping to manjaro.org
+When = PostTransaction
+Depends = networkmanager
+Exec = /bin/bash -c 'sed -i -e "s!^uri=.*!uri=http://ping.manjaro.org/check_network_status.txt!g" /usr/lib/NetworkManager/conf.d/20-connectivity.conf'

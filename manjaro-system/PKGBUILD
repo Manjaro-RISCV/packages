@@ -1,0 +1,40 @@
+# Maintainer : i@estela.cn <i@estela.cn>
+# Contributor : Dan Johansen <strit@manjaro.org>
+# Contributor : Philip Müller <philm@manjaro.org>
+# Contributor : Roland Singer <roland@manjaro.org>
+# Contributor: Rob McCathie <rob@manjaro.org>
+# Contributor: Alexandru Ianu <alexandru@manjaro.org>
+# Contributor: Dragan Simic <dsimic@buserror.io>
+
+pkgname=manjaro-system
+pkgver=22.09
+pkgrel=1
+pkgdesc="Manjaro RISC-V Linux System - Update script"
+arch=('any')
+url="https://www.manjaro.org"
+license=('GPL')
+depends=('pacman>=4.2' 'coreutils' 'util-linux' 'systemd' 'e2fsprogs' 'uboot-tools' 'sed' 'awk' 'grep' 'libnotify')
+install=manjaro-system-update.sh
+source=("resize-fs"
+        "10-installer"
+        "networkmanager-connectivity.hook"
+        "https://raw.githubusercontent.com/trustcrypto/trustcrypto.github.io/b530e0e0a1d638a64c64376f36d0b7b0e80a8e38/49-onlykey.rules"
+        "editor.sh"
+        "editor.csh")
+md5sums=('23a093fd9b8345c398c9570bbe58b12d'
+         'e53dc787c41727216ba5b173a5bed5be'
+         '82054608ac72271f8910124070371f40'
+         'adfcd75f9512735fc436e4e8e958e8ed'
+         '4c3b6e552a9fd45c7596f13bca9e88ce'
+         '0709c37ba16db4a34e6618b4a4c590bb')
+
+package() {
+    install -D -m 0755 "${srcdir}/resize-fs" -t "${pkgdir}/usr/bin"
+    install -D -m 0750 "${srcdir}/10-installer" -t "${pkgdir}/etc/sudoers.d"
+
+    install -D -m 0644 "${srcdir}/networkmanager-connectivity.hook" -t "${pkgdir}/usr/share/libalpm/hooks"
+    install -D -m 0644 "${srcdir}/49-onlykey.rules" -t "${pkgdir}/usr/lib/udev/rules.d"
+
+    install -D -m 0644 "${srcdir}/editor.sh" -t "${pkgdir}/etc/profile.d"
+    install -D -m 0644 "${srcdir}/editor.csh" -t "${pkgdir}/etc/profile.d"
+}

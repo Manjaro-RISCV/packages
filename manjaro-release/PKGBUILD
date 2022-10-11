@@ -1,0 +1,18 @@
+# Maintainer: Estela ad Astra <i@estela.cn>
+# Creator: Guinux <nuxgui@gmail.com>
+
+pkgname=manjaro-release
+pkgver=22.09
+pkgrel=1
+pkgdesc="Manjaro RISC-V release definition"
+arch=("any")
+url="https://manjaro.org/"
+license=('GPL2')
+depends=('lsb-release')
+source=('lsb-release')
+sha256sums=('aedc06443d506f13d05fa7e92932808070119598d2024dec7339c85b56fba5f5')
+
+package() {
+
+    install -D -m644 ${srcdir}/lsb-release ${pkgdir}/etc/lsb-release
+}
